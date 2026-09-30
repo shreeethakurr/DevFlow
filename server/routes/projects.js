@@ -1,0 +1,1 @@
+import {Router} from 'express';import {protect} from '../middleware/auth.js';import {list,create,getOne,update,remove} from '../controllers/projects.js';const r=Router();r.use(protect);r.get('/',list);r.post('/',create);r.get('/:id',getOne);r.put('/:id',update);r.delete('/:id',remove);export default r;

@@ -1,0 +1,1 @@
+import {Router} from 'express';import {protect} from '../middleware/auth.js';import {list,create,update,remove} from '../controllers/tasks.js';const r=Router();r.use(protect);r.get('/project/:projectId',list);r.post('/project/:projectId',create);r.put('/:id',update);r.delete('/:id',remove);export default r;

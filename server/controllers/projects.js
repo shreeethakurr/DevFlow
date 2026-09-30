@@ -1,0 +1,7 @@
+import Project from '../models/Project.js';
+import Task from '../models/Task.js';
+export async function list(req,res){const projects=await Project.find({owner:req.user._id}).sort('-createdAt');const ids=projects.map(p=>p._id);const counts=await Task.aggregate([{$match:{owner:req.user._id,project:{$in:ids}}},{$group:{_id:'$project',total:{$sum:1},done:{$sum:{$cond:[{$eq:['$status','completed']},1,0]}}}}]);const map=new Map(counts.map(x=>[String(x._id),x]));res.json(projects.map(p=>({...p.toObject(),stats:map.get(String(p._id))||{total:0,done:0}})))}
+export async function create(req,res){const {name,description,color}=req.body;if(!name)return res.status(400).json({message:'Project name is required'});res.status(201).json(await Project.create({name,description,color,owner:req.user._id}))}
+export async function getOne(req,res){const p=await Project.findOne({_id:req.params.id,owner:req.user._id});if(!p)return res.status(404).json({message:'Project not found'});res.json(p)}
+export async function update(req,res){const p=await Project.findOneAndUpdate({_id:req.params.id,owner:req.user._id},req.body,{new:true,runValidators:true});if(!p)return res.status(404).json({message:'Project not found'});res.json(p)}
+export async function remove(req,res){const p=await Project.findOneAndDelete({_id:req.params.id,owner:req.user._id});if(!p)return res.status(404).json({message:'Project not found'});await Task.deleteMany({project:p._id,owner:req.user._id});res.json({message:'Project deleted'})}
